@@ -3,11 +3,11 @@ import sys
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+# BASE_DIR indicates the root directory of this project
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
@@ -54,8 +54,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "practice_platform_backend.wsgi.application"
 
-# Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -67,8 +65,6 @@ DATABASES = {
     }
 }
 
-# Password validation
-# https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -84,42 +80,41 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# AUTH_USER_MODEL = ...
+
 # Internationalization
-# https://docs.djangoproject.com/en/3.2/topics/i18n/
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "Asia/Taipei"
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.2/howto/static-files/
 STATIC_ROOT = "/django_static/my_online_shop/"
 STATIC_URL = "/static/"
 
 MEDIA_ROOT = "/django_media/my_online_shop"
 MEDIA_URL = "/media/"
 
+# Externals
 EXTERNAL_BASE = os.path.join(BASE_DIR, "externals")
 EXTERNAL_LIBS_PATH = os.path.join(EXTERNAL_BASE, "libs")
 EXTERNAL_APPS_PATH = os.path.join(EXTERNAL_BASE, "apps")
+
 sys.path = ["", EXTERNAL_LIBS_PATH, EXTERNAL_APPS_PATH] + sys.path
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# CSRF
 CSRF_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_AGE = 86400
 
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL")
+# EMAIL
 EMAIL_HOST = "smtp.gmail.com"
-EMAIL_HOST_USER = os.environ.get("DEFAULT_FROM_EMAIL")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL")
+EMAIL_HOST_USER = os.environ.get("DEFAULT_FROM_EMAIL")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
