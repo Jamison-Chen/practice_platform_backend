@@ -10,7 +10,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     # Django modules
@@ -20,12 +20,20 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Local apps
+    # 3rd-party packages
+    "corsheaders",
+    "rest_framework",
+    # Local Apps
+    "practice_platform_backend.core",
+    "practice_platform_backend.account",
+    "practice_platform_backend.tests",
 ]
 
 MIDDLEWARE = [
+    "practice_platform_backend.core.middleware.TenantIdentificationMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -80,7 +88,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# AUTH_USER_MODEL = ...
+AUTH_USER_MODEL = "account.user"
 
 # Internationalization
 LANGUAGE_CODE = "en-us"
@@ -106,10 +114,14 @@ sys.path = ["", EXTERNAL_LIBS_PATH, EXTERNAL_APPS_PATH] + sys.path
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# CSRF
+# CSRF & CORS
 CSRF_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_AGE = 86400
+
+# CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:5500"]
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 
 # EMAIL
 EMAIL_HOST = "smtp.gmail.com"
