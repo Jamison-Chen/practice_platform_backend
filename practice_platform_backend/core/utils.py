@@ -7,7 +7,7 @@ from ..account.models import user
 DEVELOPER_DOMAIN_NAME = "127.0.0.1"
 DEVELOPER_SCHEMA_NAME = "public"
 
-OFFICIAL_DOMAIN_NAME = "b14b-114-24-67-212.ngrok.io"
+OFFICIAL_DOMAIN_NAME = "b032-210-242-50-84.ngrok.io"
 OFFICIAL_SCHEMA_NAME = "official"
 
 
@@ -20,6 +20,8 @@ def get_tenants_map():
         cursor.execute("SET search_path to {}".format(DEVELOPER_SCHEMA_NAME))
         for each in tenant.objects.all():
             m[each.domain_name] = each.schema_name
+
+        # Switch back to the official schema
         cursor.execute("SET search_path to {}".format(OFFICIAL_SCHEMA_NAME))
     return m
 
@@ -37,7 +39,7 @@ def create_tenant_schema(request):
         raise Exception("Unknown Origin.")
     with connection.cursor() as cursor:
         newDomainName = request.POST.get("domain_name")
-        username = request.POST.get("domain_name")
+        username = request.POST.get("username")
         email = request.POST.get("email")
         password = request.POST.get("password")
 
@@ -58,15 +60,38 @@ def create_tenant_schema(request):
         # Switch the schema back
         cursor.execute("SET search_path to {}".format(OFFICIAL_SCHEMA_NAME))
 
+        return {
+            "domain_name": newDomainName,
+            "username": username,
+            "email": email,
+            "password": password,
+            "schema_name": newSchemaName,
+        }
+
+
+# This function is only for testing.
+def remove_multiple_tenant_schema(request):
+    if get_request_domain_name(request) != OFFICIAL_DOMAIN_NAME:
+        raise Exception("Unknown Origin.")
+    domainNameList = request.POST.get("domain_name_list").split(",")
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path to {}".format(DEVELOPER_SCHEMA_NAME))
+        for each in tenant.objects.filter(domain_name__in=domainNameList):
+            cursor.execute("DROP SCHEMA IF EXISTS {} CASCADE".format(each.schema_name))
+        tenant.objects.filter(domain_name__in=domainNameList).delete()
+        cursor.execute("SET search_path to {}".format(OFFICIAL_SCHEMA_NAME))
+
 
 def connect_to_tenant_schema(request):
     with connection.cursor() as cursor:
-        cursor.execute("SET search_path to {};".format(DEVELOPER_SCHEMA_NAME))
+        # Use the domain name of the request to get schema name.
+        # Possible Cases:
+        # 1) from a registered tenant domain
+        # 2) from the official website domain
+        #    to register a new domain or simply fetch data of the official website
+        # 3) from the localhost
+        #    to manage the developer account in the development team
         schemaName = get_tenant_schema_name(get_request_domain_name(request))
-
-        # Switch back to the official schema
-        cursor.execute("SET search_path to {};".format(OFFICIAL_SCHEMA_NAME))
-
         if not schemaName:
             raise Exception("This domain doesn't have a dedicated schema.")
         cursor.execute("SET search_path to {};".format(schemaName))

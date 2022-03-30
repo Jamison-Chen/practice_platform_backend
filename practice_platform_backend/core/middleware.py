@@ -9,8 +9,10 @@ class TenantIdentificationMiddleware:
         # Code to be executed for each request before the view and later middleware are called.
         connect_to_tenant_schema(request)
         #
+
         response = self.get_response(request)
 
         # Code to be executed for each request/response after the view is called.
+        # ...
         #
         return response

@@ -1,4 +1,8 @@
 def cors_exempt(func):
+    """
+    This decorator currently has bad compatibility with the REST framework.
+    """
+
     def wrap(request, *arg, **args):
         res = func(request, *arg, **args)
         res["Access-Control-Allow-Credentials"] = "true"
