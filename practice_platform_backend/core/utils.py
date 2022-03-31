@@ -1,13 +1,16 @@
+import hashlib
+
 from django.db import connection
 from django.core.management import call_command
-import hashlib
+
 from .models import tenant
 from ..account.models import user
+
 
 DEVELOPER_DOMAIN_NAME = "127.0.0.1"
 DEVELOPER_SCHEMA_NAME = "public"
 
-OFFICIAL_DOMAIN_NAME = "b032-210-242-50-84.ngrok.io"
+OFFICIAL_DOMAIN_NAME = "598c-210-242-50-84.ngrok.io"
 OFFICIAL_SCHEMA_NAME = "official"
 
 
@@ -48,12 +51,15 @@ def create_tenant_schema(request):
 
         newSchemaName = "_" + hashlib.sha1(newDomainName.encode("ascii")).hexdigest()
 
-        # migrate this new schema and create admin user of this schema
+        # Migrate this new schema and create the admin user of this tenant
         call_command("migrate_one", newSchemaName)
+        cursor.execute("SET search_path to {}".format(newSchemaName))
         user.objects.create_tenant_user(email, password, username=username)
+
+        # Create an account for developers in this schema
         user.objects.create_superuser("admin@admin.com", "0000", username="Admin")
 
-        # Append domain-schema pair into database
+        # Append domain-schema pair into the public schema of the database
         cursor.execute("SET search_path to {}".format(DEVELOPER_SCHEMA_NAME))
         tenant.objects.create(domain_name=newDomainName, schema_name=newSchemaName)
 

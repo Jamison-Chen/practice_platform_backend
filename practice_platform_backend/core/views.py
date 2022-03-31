@@ -8,9 +8,10 @@ from ..account.utils import validate_account_info
 
 @csrf_exempt
 @require_POST
-def create(request):
+def create_tenant(request):
     res = {"data": None}
     try:
+        # Validate the (admin) user info before creating the schema
         validate_account_info(request)
         createResult = create_tenant_schema(request)
         res["data"] = {"status": "succeeded", "domain": createResult["domain_name"]}
@@ -19,6 +20,7 @@ def create(request):
     return JsonResponse(res)
 
 
+# This function is only for testing.
 @csrf_exempt
 @require_POST
 def remove(request):

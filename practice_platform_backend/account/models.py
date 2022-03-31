@@ -1,21 +1,10 @@
 import uuid
+import os
 
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 from . import UserIdentity
-
-
-class CreateUpdateDate(models.Model):
-    """
-    Abstract base class with a creation and modification date and time
-    """
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        abstract = True
 
 
 class UserManager(BaseUserManager):
@@ -62,6 +51,11 @@ class UserManager(BaseUserManager):
         return self.get_queryset().filter(identity=UserIdentity.TENANT_STAFF)
 
 
+def upload_to(instance, filename):
+    base, extension = os.path.splitext(filename)
+    return "user_avatars/{}".format(instance.id + extension)
+
+
 class user(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(max_length=256, unique=True)
@@ -69,7 +63,7 @@ class user(AbstractUser):
     first_name = None  # remove this default column of AbstracUser
     last_name = None  # remove this default column of AbstracUser
     identity = models.CharField(max_length=16, choices=UserIdentity.CHOICES)
-    avatar = models.ImageField(upload_to="user-avatars/", blank=True, null=True)
+    avatar = models.ImageField(upload_to=upload_to, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     objects = UserManager()
 

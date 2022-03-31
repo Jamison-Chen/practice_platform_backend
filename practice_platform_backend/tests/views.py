@@ -1,4 +1,3 @@
-from unicodedata import name
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
@@ -54,6 +53,7 @@ class CarViewSet(viewsets.ViewSet):
             )
         )
         res = {"data": None}
+
         ############## This part is for testing only. ##########################
         ############## For the reason that we don't actually use ###############
         ############## dedicatede domain as the host name at the frontend. #####
@@ -66,6 +66,7 @@ class CarViewSet(viewsets.ViewSet):
                 raise Exception("This domain doesn't have a dedicated schema.")
             cursor.execute("SET search_path to {};".format(schemaName))
         ########################################################################
+
         queryset = car.objects.all()
         serializer_class = CarSerializer
         res["data"] = serializer_class(queryset, many=True).data

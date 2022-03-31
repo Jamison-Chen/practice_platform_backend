@@ -1,6 +1,6 @@
 from django.urls import path, include
 
-# from .views import create
+from . import views
 
 # from rest_framework.routers import DefaultRouter
 
@@ -9,5 +9,7 @@ from django.urls import path, include
 # urlpatterns = router.urls
 
 urlpatterns = [
-    # path("create", create)
+    path("create", views.create_tenant_user),
+    path("list-all", views.list_tenant_user),
+    path("upload-avatar", views.upload_avatar),
 ]
