@@ -10,7 +10,7 @@ from ..account.models import user
 DEVELOPER_DOMAIN_NAME = "127.0.0.1"
 DEVELOPER_SCHEMA_NAME = "public"
 
-OFFICIAL_DOMAIN_NAME = "598c-210-242-50-84.ngrok.io"
+OFFICIAL_DOMAIN_NAME = "5bc4-210-242-50-84.ngrok.io"
 OFFICIAL_SCHEMA_NAME = "official"
 
 
@@ -30,7 +30,7 @@ def get_tenants_map():
 
 
 def get_request_domain_name(request):
-    return request.get_host().split(":")[0].lower()  # remove port
+    return request.get_host().split(":")[0].lower()  # ignore port
 
 
 def get_tenant_schema_name(domainName):
@@ -92,10 +92,10 @@ def connect_to_tenant_schema(request):
     with connection.cursor() as cursor:
         # Use the domain name of the request to get schema name.
         # Possible Cases:
-        # 1) from a registered tenant domain
-        # 2) from the official website domain
+        # 1) The request was from a registered tenant domain
+        # 2) The request was from the official website domain
         #    to register a new domain or simply fetch data of the official website
-        # 3) from the localhost
+        # 3) The request was from the localhost
         #    to manage the developer account in the development team
         schemaName = get_tenant_schema_name(get_request_domain_name(request))
         if not schemaName:

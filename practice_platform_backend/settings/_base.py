@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     # 3rd-party packages
     "corsheaders",
     "rest_framework",
+    "rest_framework.authtoken",
     # Local Apps
     "practice_platform_backend.core",
     "practice_platform_backend.account",
@@ -90,6 +91,12 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = "account.user"
 
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+    ]
+}
+
 # Internationalization
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Asia/Taipei"
@@ -114,11 +121,12 @@ sys.path = ["", EXTERNAL_LIBS_PATH, EXTERNAL_APPS_PATH] + sys.path
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# CSRF & CORS
+# CSRF
 CSRF_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_AGE = 86400
 
+# CORS
 # CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:5500"]
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
