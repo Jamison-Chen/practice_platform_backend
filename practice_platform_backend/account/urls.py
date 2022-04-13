@@ -11,8 +11,10 @@ router = DefaultRouter()
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("create_tenant_user", views.create_tenant_user),
-    path("get-auth-token", authviews.obtain_auth_token),
+    path("login", views.login),
+    path("logout", views.logout),
+    path("create-tenant-user", views.create_tenant_user),
+    path("obtain-auth-token", authviews.obtain_auth_token),
     path("list-all", views.list_tenant_user),
     path("upload-avatar", views.upload_avatar),
 ]
