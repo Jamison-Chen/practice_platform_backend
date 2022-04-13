@@ -31,7 +31,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "practice_platform_backend.core.middleware.TenantIdentificationMiddleware",
+    # "practice_platform_backend.core.middleware.tenant_identification_middleware",
+    "practice_platform_backend.core.middleware.fake_tenant_identification_middleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
@@ -40,6 +41,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "practice_platform_backend.core.middleware.check_login_status_middleware",
 ]
 
 ROOT_URLCONF = "practice_platform_backend.urls"
@@ -73,6 +75,11 @@ DATABASES = {
         "PORT": "5432",
     }
 }
+
+AUTHENTICATION_BACKENDS = [
+    "practice_platform_backend.account.backends.MyBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
 
 AUTH_PASSWORD_VALIDATORS = [
     {
