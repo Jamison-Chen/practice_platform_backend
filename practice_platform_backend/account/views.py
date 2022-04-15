@@ -11,19 +11,14 @@ from rest_framework.authtoken.models import Token
 from .models import user as User
 from .utils import validate_account_info
 
-# from .serializers import AccountSerializer
+from .serializers import AccountSerializer
 
 
 @csrf_exempt
 @require_POST
 def create_tenant_user(request):
-    res = {
-        "login-status": "login" if request.user else "logout",
-        "user-info": None,
-        "status": None,
-    }
-    if request.user:
-        res["user-info"] = request.user.username
+    res = {"status": "", "is-login": False, "user-info": {}, "error-message": ""}
+    if request.user:  # require a login user
         try:
             validate_account_info(request)
             username = request.POST.get("username")
@@ -32,68 +27,92 @@ def create_tenant_user(request):
 
             User.objects.create_tenant_user(email, password, username=username)
             res["status"] = "succeeded"
+            res["is-login"] = True
+            res["user-info"]["username"] = request.user.username
         except Exception as e:
             res["status"] = "failed"
             res["error-message"] = str(e)
+    else:
+        res["status"] = "failed"
+        res["error-message"] = "Please log in."
     return JsonResponse(res)
 
 
 @csrf_exempt
 @require_POST
 def login(request):
-    res = {
-        "login-status": "unknown",
-        "user-info": None,
-    }
+    """
+    "fake-from-domain": string,
+    "email": string,
+    "password": string
+    """
+    res = {"status": "", "error-message": "", "user-info": {}}
     if (email := request.POST.get("email")) and (
         password := request.POST.get("password")
     ):
         try:
             user = authenticate(request, email=email, password=password)
-            res["user-info"] = user.username
+            res["user-info"]["username"] = user.username
             token = Token.objects.get_or_create(user=user)[0].key
-            res["login-status"] = "login"
+            res["status"] = "succeeded"
             res = JsonResponse(res)
             res.headers["new-token"] = token
             return res
         except Exception as e:
-            return JsonResponse({"login-status": str(e)})
+            res["status"] = "failed"
+            res["error-message"] = str(e)
+            return JsonResponse(res)
     else:
+        res["status"] = "failed"
         return JsonResponse(res)
+    """
+    "status": string,
+    "error-message": string,
+    "user-info": dict
+    """
 
 
 @csrf_exempt
 @require_POST
 def logout(request):
-    res = {"login-status": "login" if request.user else "logout"}
+    res = {"status": ""}
     Token.objects.filter(user=request.user).delete()
     res = JsonResponse(res)
     res.headers["is-log-out"] = "yes"
     res.delete_cookie("token", samesite="None")
+    res["status"] = "succeeded"
     return res
 
 
 @csrf_exempt
 @require_POST
-def list_tenant_user(request):
+def list_tenant_users(request):
     res = {
-        "login-status": "logout",
+        "status": "",
+        "is-login": False,
         "data": [],
-        "user-info": None,
+        "user-info": {},
+        "error-message": "",
     }
-    if request.user:
-        res["user-info"] = request.user.username
-        res["login-status"] = "login"
-        for each in User.objects.all_staff():
-            res["data"].append({"username": each.username})
-
+    try:
+        if request.user:
+            res["status"] = "succeeded"
+            res["is-login"] = True
+            res["user-info"]["username"] = request.user.username
+            for each in User.objects.all_staff():
+                res["data"].append({"username": each.username})
+            # queryset = User.objects.all_staff()
+            # serializer_class = AccountSerializer
+            # res["data"] = serializer_class(queryset, many=True).data
+        else:
+            res["status"] = "failed"
+            res["error-message"] = "Please log in."
+    except Exception as e:
+        res["error-message"] = str(e)
     return JsonResponse(res)
 
 
 @csrf_exempt
 @require_POST
 def upload_avatar(request):
-    res = {
-        "status": None,
-        "user-info": None,
-    }
+    res = {"status": "", "user-info": {}, "error-message": ""}

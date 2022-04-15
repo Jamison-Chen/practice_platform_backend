@@ -15,6 +15,6 @@ urlpatterns = [
     path("logout", views.logout),
     path("create-tenant-user", views.create_tenant_user),
     path("obtain-auth-token", authviews.obtain_auth_token),
-    path("list-all", views.list_tenant_user),
+    path("list-all", views.list_tenant_users),
     path("upload-avatar", views.upload_avatar),
 ]

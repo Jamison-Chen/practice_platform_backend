@@ -3,6 +3,8 @@ from django.db import connection
 
 
 class Command(MigrationCommand):
+    """This command should be used along with t_manage.py"""
+
     def add_arguments(self, parser):
         parser.add_argument("schema", type=str)
         super().add_arguments(parser)

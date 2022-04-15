@@ -39,7 +39,6 @@ def all_need_auth(request):
 
 
 @csrf_exempt
-@api_view(["GET"])
 def all(request):
     print(
         "---------------------------------\
@@ -55,20 +54,6 @@ def all(request):
         )
     )
     res = {"data": None}
-
-    ############## This part is for testing only. ##########################
-    ############## For the reason that we don't actually use ###############
-    ############## dedicatede domain as the host name at the frontend. #####
-    # from django.db import connection
-    # from ..core.utils import get_tenant_schema_name
-
-    # with connection.cursor() as cursor:
-    #     schemaName = get_tenant_schema_name(request.POST.get("fake-from-domain"))
-    #     if not schemaName:
-    #         raise Exception("This domain doesn't have a dedicated schema.")
-    #     cursor.execute("SET search_path to {};".format(schemaName))
-    ########################################################################
-
     queryset = car.objects.all()
     serializer_class = CarSerializer
     res["data"] = serializer_class(queryset, many=True).data
@@ -80,20 +65,6 @@ def all(request):
 #     @csrf_exempt
 #     def add_car(self, request):
 #         res = {"data": None}
-
-#         ############## This part is for testing only. ##########################
-#         ############## For the reason that we don't actually use ###############
-#         ############## dedicatede domain as the host name at the frontend. #####
-#         from django.db import connection
-#         from ..core.utils import get_tenant_schema_name
-
-#         with connection.cursor() as cursor:
-#             schemaName = get_tenant_schema_name(request.POST.get("fake-from-domain"))
-#             if not schemaName:
-#                 raise Exception("This domain doesn't have a dedicated schema.")
-#             cursor.execute("SET search_path to {};".format(schemaName))
-#         ########################################################################
-
 #         if carName := request.POST.get("car_name"):
 #             car.objects.create(name=carName)
 #             res["data"] = {"status": "succeeded"}

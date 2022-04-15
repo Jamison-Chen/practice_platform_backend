@@ -1,9 +1,12 @@
 from django.contrib.auth import authenticate
 from django.conf import settings
+from django.http import JsonResponse
 
-from rest_framework.authtoken.models import Token
-
-from .utils import connect_to_tenant_schema, fake_connect_to_tenant_schema
+from .utils import (
+    connect_to_tenant_schema,
+    get_request_domain_name,
+    fake_connect_to_tenant_schema,
+)
 
 
 def tenant_identification_middleware(get_response):
@@ -25,10 +28,20 @@ def tenant_identification_middleware(get_response):
 def fake_tenant_identification_middleware(get_response):
     def middleware(request):
         # Code to be executed for each request before the view and later middleware are called.
-        if request.path == "/api/create-shop/create":
-            connect_to_tenant_schema(request)
-        else:
-            fake_connect_to_tenant_schema(request)
+        try:
+            apiPathsForOfficialPage = [
+                "/api/shop/create",
+                "/api/shop/check-domain-available",
+            ]
+            if (
+                get_request_domain_name(request) == "127.0.0.1"
+                or request.path in apiPathsForOfficialPage
+            ):
+                connect_to_tenant_schema(request)
+            else:
+                fake_connect_to_tenant_schema(request)
+        except Exception as e:
+            return JsonResponse({"error-message": str(e)})
         #
 
         response = get_response(request)

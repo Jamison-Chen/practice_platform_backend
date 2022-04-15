@@ -3,7 +3,10 @@ import os
 import sys
 import dotenv
 
-
+"""
+The command will look like:
+    python t_manage.py migrate_one schema:aSchemaName
+"""
 if __name__ == "__main__":
     dotenv.read_dotenv()
     os.environ.setdefault(
