@@ -10,7 +10,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     # Django modules
@@ -20,10 +20,23 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Local apps
+    # 3rd-party packages
+    "corsheaders",
+    "rest_framework",
+    "rest_framework.authtoken",
+    # Local Apps
+    "practice_platform_backend.core",
+    "practice_platform_backend.account",
+    "practice_platform_backend.product",
+    "practice_platform_backend.page",
+    "practice_platform_backend.seo",
+    "practice_platform_backend.tests",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
+    # "practice_platform_backend.core.middleware.tenant_identification_middleware",
+    "practice_platform_backend.core.middleware.fake_tenant_identification_middleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -31,6 +44,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "practice_platform_backend.core.middleware.check_login_status_middleware",
 ]
 
 ROOT_URLCONF = "practice_platform_backend.urls"
@@ -65,6 +79,11 @@ DATABASES = {
     }
 }
 
+AUTHENTICATION_BACKENDS = [
+    "practice_platform_backend.account.backends.MyBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -80,7 +99,13 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# AUTH_USER_MODEL = ...
+AUTH_USER_MODEL = "account.user"
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+    ]
+}
 
 # Internationalization
 LANGUAGE_CODE = "en-us"
@@ -90,10 +115,10 @@ USE_L10N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
-STATIC_ROOT = "/django_static/my_online_shop/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 STATIC_URL = "/static/"
 
-MEDIA_ROOT = "/django_media/my_online_shop"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
 
 # Externals
@@ -110,6 +135,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CSRF_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_AGE = 86400
+
+# CORS
+# CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:5500"]
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 
 # EMAIL
 EMAIL_HOST = "smtp.gmail.com"

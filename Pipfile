@@ -12,6 +12,8 @@ dj-static = "*"
 pillow = "*"
 black = "*"
 django-dotenv = "*"
+djangorestframework = "*"
+django-cors-headers = "*"
 
 [dev-packages]
 
