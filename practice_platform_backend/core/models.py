@@ -1,14 +1,11 @@
 import uuid
 import os
+import datetime
 
 from django.db import models
 
 
-class CreateUpdateDate(models.Model):
-    """
-    Abstract base class with a creation and modification date and time
-    """
-
+class CreateUpdateDateModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -16,12 +13,34 @@ class CreateUpdateDate(models.Model):
         abstract = True
 
 
+class SortableModel(models.Model):
+    order_number = models.PositiveIntegerField()
+
+    class Meta:
+        abstract = True
+
+
+class PublishableModel(models.Model):
+    publication_date = models.DateField(blank=True, null=True)
+    is_published = models.BooleanField(default=False)
+
+    class Meta:
+        abstract = True
+
+    @property
+    def is_visible(self):
+        return self.is_published and (
+            self.publication_date is None
+            or self.publication_date <= datetime.date.today()
+        )
+
+
 def upload_to(instance, filename):
     base, extension = os.path.splitext(filename)
-    return "brand_logos/{}".format(instance.id + extension)
+    return "brand_logos/{}".format(str(instance.id) + filename)
 
 
-class tenant(CreateUpdateDate):
+class tenant(CreateUpdateDateModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     domain_name = models.CharField(max_length=256, unique=True)
     schema_name = models.CharField(max_length=1024, unique=True)

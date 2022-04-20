@@ -1,8 +1,9 @@
 import hashlib
-import base64
+import os
 
 from django.db import connection
 from django.core.management import call_command
+from django.conf import settings
 
 from .models import tenant as Tenant
 from .serializers import TenantSerializer
@@ -93,7 +94,7 @@ def read_tenant_info(request):
         result = {
             "brand-name": t.brand_name or "",
             "tax-id-number": t.tax_id_number or "",
-            "logo": base64.b64encode(t.logo.open()) if t.logo else "",
+            "logo-url": settings.MEDIA_URL + str(t.logo) if t.logo else "",
             "tel": t.tel or "",
         }
         # Switch the schema back
@@ -112,19 +113,22 @@ def update_tenant_info(request):
         t = Tenant.objects.get(domain_name=domain_name)
         new_brand_name = brand_name or t.brand_name
         new_tax_id_number = tax_id_number or t.tax_id_number
-        # new_logo = base64.b64encode(logo) or t.logo
-        new_logo = None
+        new_logo = logo or t.logo
         new_tel = tel or t.tel
-        Tenant.objects.filter(domain_name=domain_name).update(
-            brand_name=new_brand_name,
-            tax_id_number=new_tax_id_number,
-            logo=new_logo,
-            tel=new_tel,
-        )
+
+        t.brand_name = new_brand_name
+        t.tax_id_number = new_tax_id_number
+        t.tel = new_tel
+        try:
+            os.remove(str(settings.BASE_DIR) + str(settings.MEDIA_URL) + str(t.logo))
+        except:
+            pass
+        t.logo = new_logo
+        t.save()
         result = {
             "brand-name": new_brand_name,
             "tax-id-number": new_tax_id_number,
-            "logo": new_logo,
+            "logo-url": settings.MEDIA_URL + str(t.logo),
             "tel": new_tel,
         }
         # Switch the schema back
@@ -166,6 +170,11 @@ def list_all_tenants(request):
         result = serializer_class(queryset, many=True).data
         cursor.execute("SET search_path to {}".format(OFFICIAL_SCHEMA_NAME))
     return result
+
+
+def connect_to_official_schema(request):
+    with connection.cursor() as cursor:
+        cursor.execute("SET search_path to {};".format(OFFICIAL_SCHEMA_NAME))
 
 
 def connect_to_tenant_schema(request):

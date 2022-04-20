@@ -53,7 +53,7 @@ class UserManager(BaseUserManager):
 
 def upload_to(instance, filename):
     base, extension = os.path.splitext(filename)
-    return "user_avatars/{}".format(instance.id + extension)
+    return "user_avatars/{}".format(str(instance.id) + extension)
 
 
 class user(AbstractUser):

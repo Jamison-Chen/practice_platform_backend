@@ -1,16 +1,13 @@
 # from django.conf import settings
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseNotFound
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib.auth import authenticate
 
-# from rest_framework import viewsets
-# from rest_framework.decorators import action
 from rest_framework.authtoken.models import Token
 
 from .models import user as User
 from .utils import validate_account_info
-
 from .serializers import AccountSerializer
 
 
@@ -29,13 +26,18 @@ def create_tenant_user(request):
             res["status"] = "succeeded"
             res["is-login"] = True
             res["user-info"]["username"] = request.user.username
+            return JsonResponse(res)
         except Exception as e:
             res["status"] = "failed"
-            res["error-message"] = str(e)
+            try:
+                res["error-message"] = str(list(e)[0])
+            except:
+                res["error-message"] = str(e)
+            return HttpResponseNotFound(JsonResponse(res))
     else:
         res["status"] = "failed"
         res["error-message"] = "Please log in."
-    return JsonResponse(res)
+        return HttpResponseNotFound(JsonResponse(res))
 
 
 @csrf_exempt
@@ -61,10 +63,11 @@ def login(request):
         except Exception as e:
             res["status"] = "failed"
             res["error-message"] = str(e)
-            return JsonResponse(res)
+            return HttpResponseNotFound(JsonResponse(res))
     else:
+        res["error-message"] = "Info not sufficient."
         res["status"] = "failed"
-        return JsonResponse(res)
+        return HttpResponseNotFound(JsonResponse(res))
     """
     "status": string,
     "error-message": string,
@@ -74,14 +77,40 @@ def login(request):
 
 @csrf_exempt
 @require_POST
+def checkLogin(request):
+    """
+    "fake-domain-name": string,
+    """
+    res = {"data": False, "username": "", "error-message": ""}
+    try:
+        if request.user:
+            res["data"] = True
+            res["username"] = request.user.username
+    except Exception as e:
+        res["error-message"] = str(e)
+    return JsonResponse(res)
+    """
+    "data": boolean,
+    "username": string
+    """
+
+
+@csrf_exempt
+@require_POST
 def logout(request):
+    """
+    "fake-from-domain": string
+    """
     res = {"status": ""}
     Token.objects.filter(user=request.user).delete()
+    res["status"] = "succeeded"
     res = JsonResponse(res)
     res.headers["is-log-out"] = "yes"
     res.delete_cookie("token", samesite="None")
-    res["status"] = "succeeded"
     return res
+    """
+    "status": "succeeded" | "failed"
+    """
 
 
 @csrf_exempt
@@ -104,12 +133,14 @@ def list_tenant_users(request):
             # queryset = User.objects.all_staff()
             # serializer_class = AccountSerializer
             # res["data"] = serializer_class(queryset, many=True).data
+            return JsonResponse(res)
         else:
             res["status"] = "failed"
             res["error-message"] = "Please log in."
+            return HttpResponseNotFound(JsonResponse(res))
     except Exception as e:
         res["error-message"] = str(e)
-    return JsonResponse(res)
+        return HttpResponseNotFound(JsonResponse(res))
 
 
 @csrf_exempt

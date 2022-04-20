@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import HttpResponseNotFound, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
@@ -46,10 +46,14 @@ def create(request):
         result = create_tenant_schema(request)
         res["status"] = "succeeded"
         res["domain"] = result["domain-name"]
+        return JsonResponse(res)
     except Exception as e:
         res["status"] = "failed"
-        res["error-message"] = str(e)
-    return JsonResponse(res)
+        try:
+            res["error-message"] = str(enumerate(e)[0])
+        except:
+            res["error-message"] = str(e)
+        return HttpResponseNotFound(JsonResponse(res))
     """
     "status": string,
     "domain": string,
@@ -79,9 +83,10 @@ def read(request):
         except Exception as e:
             res["error-message"] = str(e)
             res["status"] = "failed"
+            return HttpResponseNotFound(JsonResponse(res))
     else:
-        res["status"] = "failed"
-        res["error-message"] = "Please log in."
+        res["data"]["brand-name"] = read_tenant_info(request)["brand-name"]
+        res["status"] = "succeeded"
     return JsonResponse(res)
     """
     "status": string,
@@ -90,7 +95,7 @@ def read(request):
     "data":{
         "brand-name": string,
         "tax-id-number": string,
-        "logo": string,
+        "logo-url": string,
         "tel": string,
     }
     """
@@ -100,25 +105,31 @@ def read(request):
 @require_POST
 def update(request):
     """
-    fake-domain-name: string,
-    brand-name: string,
-    tax-id-number: string,
-    logo: string,
-    tel: string
+    "fake-domain-name": string,
+    "brand-name": string,
+    "tax-id-number": string,
+    "logo": image file,
+    "tel": string
     """
     res = {"status": "", "is-login": False, "error-message": "", "data": {}}
     if request.user:
-        res["is-login"] = True
-        res["data"] = update_tenant_info(request)
-        res["status"] = "succeeded"
+        try:
+            res["is-login"] = True
+            res["data"] = update_tenant_info(request)
+            res["status"] = "succeeded"
+            return JsonResponse(res)
+        except Exception as e:
+            res["status"] = "failed"
+            res["error-message"] = str(e)
+            return HttpResponseNotFound(JsonResponse(res))
     else:
         res["status"] = "failed"
         res["error-message"] = "Please log in."
-    return JsonResponse(res)
+        return HttpResponseNotFound(JsonResponse(res))
     """
     "brand-name": string,
     "tax-id-number": string,
-    "logo": string,
+    "logo-url": string,
     "tel": string,
     """
 
@@ -148,10 +159,15 @@ def delete(request):
 @require_POST
 def list(request):
     res = {"status": "", "data": [], "error-message": ""}
-    try:
-        res["data"] = list_all_tenants()
-        res["status"] = "succeeded"
-    except Exception as e:
-        res["error-message"] = str(e)
-        res["status"] = "failed"
-    return JsonResponse(res)
+    if request.user and request.user.is_superuser:
+        try:
+            res["data"] = list_all_tenants()
+            res["status"] = "succeeded"
+            return JsonResponse(res)
+        except Exception as e:
+            res["error-message"] = str(e)
+            res["status"] = "failed"
+            return HttpResponseNotFound(JsonResponse(res))
+    else:
+        res["error-message"] = "You are not allowed to query."
+        return HttpResponseNotFound(JsonResponse(res))

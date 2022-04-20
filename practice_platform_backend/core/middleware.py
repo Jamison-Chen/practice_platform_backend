@@ -1,8 +1,9 @@
 from django.contrib.auth import authenticate
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import HttpResponseNotFound, JsonResponse
 
 from .utils import (
+    connect_to_official_schema,
     connect_to_tenant_schema,
     get_request_domain_name,
     fake_connect_to_tenant_schema,
@@ -29,19 +30,22 @@ def fake_tenant_identification_middleware(get_response):
     def middleware(request):
         # Code to be executed for each request before the view and later middleware are called.
         try:
-            apiPathsForOfficialPage = [
-                "/api/shop/create",
-                "/api/shop/check-domain-available",
-            ]
-            if (
-                get_request_domain_name(request) == "127.0.0.1"
-                or request.path in apiPathsForOfficialPage
-            ):
-                connect_to_tenant_schema(request)
+            if request.method != "GET":
+                apiPathsForOfficialPage = [
+                    "/api/shop/create",
+                    "/api/shop/check-domain-available",
+                ]
+                if (
+                    get_request_domain_name(request) == "127.0.0.1"
+                    or request.path in apiPathsForOfficialPage
+                ):
+                    connect_to_tenant_schema(request)
+                else:
+                    fake_connect_to_tenant_schema(request)
             else:
-                fake_connect_to_tenant_schema(request)
+                connect_to_official_schema(request)
         except Exception as e:
-            return JsonResponse({"error-message": str(e)})
+            return HttpResponseNotFound(JsonResponse({"error-message": str(e)}))
         #
 
         response = get_response(request)

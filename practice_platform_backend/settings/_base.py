@@ -27,6 +27,9 @@ INSTALLED_APPS = [
     # Local Apps
     "practice_platform_backend.core",
     "practice_platform_backend.account",
+    "practice_platform_backend.product",
+    "practice_platform_backend.page",
+    "practice_platform_backend.seo",
     "practice_platform_backend.tests",
 ]
 
@@ -112,10 +115,10 @@ USE_L10N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
-STATIC_ROOT = "/django_static/my_online_shop/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 STATIC_URL = "/static/"
 
-MEDIA_ROOT = "/django_media/my_online_shop"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
 
 # Externals
